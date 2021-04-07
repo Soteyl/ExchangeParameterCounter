@@ -90,14 +90,14 @@ namespace ExchangeParameterCounterClient
         public static int CountLostPackages(string[] allPackagesWithNumbers)
         {
             int lostAmount = -1;
-            int numberOfPackage = 0; 
+            int numberOfPackage = 0;
+            int.TryParse(allPackagesWithNumbers[0].Split('-')[0], out numberOfPackage);
             int lastNumber = 0;
-            for (int i = 0; i < allPackagesWithNumbers.Length; i++)
+            for (int i = 1; i < allPackagesWithNumbers.Length; i++)
             {
                 lastNumber = numberOfPackage;
                 if (int.TryParse(allPackagesWithNumbers[i].Split('-')[0], out numberOfPackage)) // package looks like *number*-*value*
                 {
-                    if (lostAmount == -1 && numberOfPackage == 0) lostAmount = 0; 
                     if (numberOfPackage - lastNumber != 1 && (numberOfPackage != 0 && lastNumber != 999)) // the package is numbered from 0 to 999
                     {
                         if (lastNumber > numberOfPackage) lostAmount += numberOfPackage + (999 - lastNumber);
@@ -145,13 +145,12 @@ namespace ExchangeParameterCounterClient
 
             int[] repeatsOfValue = CountRepeats(allPackages);
 
-
             int mode = GetMaxIndex(repeatsOfValue);
             
             List<int> modes = new List<int>();
             for (int i = 0; i < repeatsOfValue.Length; i++)
             {
-                if (repeatsOfValue[i] == repeatsOfValue[mode]) modes.Add(i);
+                if (repeatsOfValue[i] == repeatsOfValue[mode]) modes.Add(i); // find several modes
             }
             return modes;
         }
