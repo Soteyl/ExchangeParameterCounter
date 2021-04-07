@@ -9,6 +9,7 @@ namespace ExchangeParameterCounterClient
     public static class DataProcess
     {
         public static DataInfo Info;
+        public static int MaxSizeOfFile = 0;
         static DataProcess()
         {
             Info = Serializer.GetDataFromXml<DataInfo>(PathInfo.DataInfo);
@@ -52,7 +53,7 @@ namespace ExchangeParameterCounterClient
         {
             FileInfo dataFile = new FileInfo(path);
             
-            if (dataFile.Length > Info.MaxSizeOfFile)
+            if (dataFile.Length > MaxSizeOfFile)
             {
                 var lastData = GetAllDataInfo();
                 Info.AddNewValuesToData(lastData);

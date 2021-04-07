@@ -12,6 +12,8 @@ namespace ExchangeParameterCounterClient
 		public int TTL { get; set; }
 		public int ReceptionDelayInMiliseconds { get; set; }
 
+		public int MaxSizeOfFile { get; set; }
+
 		public ClientConfig() { }
 		public ClientConfig(string multicastIP, int multicastPort, int ttl, int receptionDelayInMiliseconds)
         {

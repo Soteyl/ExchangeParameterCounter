@@ -10,7 +10,7 @@ namespace ExchangeParameterCounterClient
         {
             ClientConfig clientConfig = Serializer.GetDataFromXml<ClientConfig>(PathInfo.ClientConfigPath);
             var client = new Client(clientConfig);
-
+            DataProcess.MaxSizeOfFile = clientConfig.MaxSizeOfFile;
             Thread threadReceive = new Thread(client.ReceiveMessage);
             threadReceive.Start();
 

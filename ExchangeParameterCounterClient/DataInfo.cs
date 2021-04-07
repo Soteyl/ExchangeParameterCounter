@@ -13,8 +13,6 @@ namespace ExchangeParameterCounterClient
         public int LastDataFileNumber { get; set; }
 
         public int[] RepeatsOfValues { get; set; } = new int[0];
-
-        public int MaxSizeOfFile { get; set; }
         public float Average { get; set; }
         public double StandartDeviation { get; set; }
         public List<int> Modes { get; set; }
