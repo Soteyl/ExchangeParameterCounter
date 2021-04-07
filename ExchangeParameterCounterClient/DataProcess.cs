@@ -51,6 +51,7 @@ namespace ExchangeParameterCounterClient
         private static void CreateNewFileIfCurrentIsBig(string path)
         {
             FileInfo dataFile = new FileInfo(path);
+            
             if (dataFile.Length > Info.MaxSizeOfFile)
             {
                 var lastData = GetAllDataInfo();

@@ -35,13 +35,13 @@ namespace ExchangeParameterCounterClient
         }
         public void AddNewValuesToData(DataInfo newData)
         {
-            LostPackagesAmount = LostPackagesAmount;
-            SavedPackagesAmount += SavedPackagesAmount;
-            Average = Average;
-            Modes = Modes;
-            Median = Median;
-            RepeatsOfValues = RepeatsOfValues;
-            StandartDeviation = StandartDeviation;
+            LostPackagesAmount = newData.LostPackagesAmount;
+            SavedPackagesAmount += newData.SavedPackagesAmount;
+            Average = newData.Average;
+            Modes = newData.Modes;
+            Median = newData.Median;
+            RepeatsOfValues = newData.RepeatsOfValues;
+            StandartDeviation = newData.StandartDeviation;
         }
         public void SaveToXml()
         {
