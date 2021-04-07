@@ -1,0 +1,13 @@
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\obj\Debug\netcoreapp3.1\ExchangeParameterCounterServer.csprojAssemblyReference.cache
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\obj\Debug\netcoreapp3.1\ExchangeParameterCounterServer.AssemblyInfoInputs.cache
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\obj\Debug\netcoreapp3.1\ExchangeParameterCounterServer.AssemblyInfo.cs
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\obj\Debug\netcoreapp3.1\ExchangeParameterCounterServer.csproj.CoreCompileInputs.cache
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\bin\Debug\netcoreapp3.1\ExchangeParameterCounterServer.exe
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\bin\Debug\netcoreapp3.1\ExchangeParameterCounterServer.deps.json
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\bin\Debug\netcoreapp3.1\ExchangeParameterCounterServer.runtimeconfig.json
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\bin\Debug\netcoreapp3.1\ExchangeParameterCounterServer.runtimeconfig.dev.json
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\bin\Debug\netcoreapp3.1\ExchangeParameterCounterServer.dll
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\bin\Debug\netcoreapp3.1\ExchangeParameterCounterServer.pdb
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\obj\Debug\netcoreapp3.1\ExchangeParameterCounterServer.dll
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\obj\Debug\netcoreapp3.1\ExchangeParameterCounterServer.pdb
+D:\Projects\Work\ExchangeParameterCounter\ExchangeParameterCounterServer\obj\Debug\netcoreapp3.1\ExchangeParameterCounterServer.genruntimeconfig.cache

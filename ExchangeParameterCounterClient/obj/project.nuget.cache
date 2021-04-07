@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "tfte802hltf8uA3Ed5nt4rrnv/6gRTMXMlL8JrzjZ7DHQQ1oEh0k7qZDYXs9MuupJaWWdBzBCfICmGdcbOM4DA==",
+  "success": true,
+  "projectFilePath": "D:\\Projects\\Work\\ExchangeParameterCounter\\ExchangeParameterCounterClient\\ExchangeParameterCounterClient.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\sotey\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\3.1.12\\microsoft.netcore.app.host.win-x64.3.1.12.nupkg.sha512"
+  ],
+  "logs": []
+}
