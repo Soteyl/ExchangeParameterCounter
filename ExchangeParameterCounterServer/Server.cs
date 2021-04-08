@@ -10,10 +10,20 @@ namespace ExchangeParameterCounterServer
     {
         private IPAddress _ip;
         private Random rnd;
-        public Server(ServerConfig config) : base(config.MulticastIP, config.MulticastPort, config.MinValue, config.MaxValue)
+        public Server(ServerConfig config)
         {
-            _ip = IPAddress.Parse(MulticastIP);
             rnd = new Random();
+            UpdateConfig(config);
+        }
+
+        public void UpdateConfig(ServerConfig config)
+        {
+            MulticastIP = config.MulticastIP;
+            MulticastPort = config.MulticastPort;
+            MinValue = config.MinValue;
+            MaxValue = config.MaxValue;
+            _ip = IPAddress.Parse(MulticastIP);
+
         }
 
         public void Start()
@@ -27,7 +37,7 @@ namespace ExchangeParameterCounterServer
                     int i = 0;
                     while (true)
                     {
-                        string randomValue = i + "-" + rnd.Next(MinValue, MaxValue) + " ";
+                        string randomValue = i + "_" + rnd.Next(MinValue, MaxValue) + " ";
                         var data = Encoding.Default.GetBytes(randomValue.ToString());
                         udpClient.Send(data, data.Length, ipEndPoint);
                         i = (i + 1) % 1000; //number packages from 0 to 999

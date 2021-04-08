@@ -34,7 +34,7 @@ namespace ExchangeParameterCounterClient
             int[] result = new int[allPackagesWithNumbers.Length];
             for(int i = 0; i < allPackagesWithNumbers.Length; i++)
             {
-                result[i] = int.Parse(allPackagesWithNumbers[i].Split('-')[1]);
+                result[i] = int.Parse(allPackagesWithNumbers[i].Split('_')[1]);
             }
             return result;
         }
@@ -42,6 +42,7 @@ namespace ExchangeParameterCounterClient
         public static void SaveBytesToAFile(List<byte> bytes)
         {
             string path = $"{PathInfo.DataPath}/data{Info.LastDataFileNumber}.txt";
+            
             using (FileStream fs = new FileStream(path, FileMode.Append))
             {
                 fs.Write(bytes.ToArray());
@@ -91,12 +92,11 @@ namespace ExchangeParameterCounterClient
         {
             int lostAmount = -1;
             int numberOfPackage = 0;
-            int.TryParse(allPackagesWithNumbers[0].Split('-')[0], out numberOfPackage);
             int lastNumber = 0;
             for (int i = 1; i < allPackagesWithNumbers.Length; i++)
             {
                 lastNumber = numberOfPackage;
-                if (int.TryParse(allPackagesWithNumbers[i].Split('-')[0], out numberOfPackage)) // package looks like *number*-*value*
+                if (int.TryParse(allPackagesWithNumbers[i].Split('_')[0], out numberOfPackage)) // package looks like *number*-*value*
                 {
                     if (numberOfPackage - lastNumber != 1 && (numberOfPackage != 0 && lastNumber != 999)) // the package is numbered from 0 to 999
                     {
@@ -130,12 +130,15 @@ namespace ExchangeParameterCounterClient
                     (allPackages.Length+Info.SavedPackagesAmount);
         }
 
-        private static int GetMaxIndex(int[] array)
+        private static int GetKeyOfMax(XmlSerializableDictionary<int, int> array)
         {
             int result = 0;
-            for (int i = 1; i < array.Length; i++)
+            foreach(var element in array)
             {
-                if (array[i] > array[result]) result = i;
+                if (element.Value > array[result])
+                {
+                    result = element.Key;
+                }
             }
             return result;
         }
@@ -143,27 +146,32 @@ namespace ExchangeParameterCounterClient
         public static List<int> CountModes(int[] allPackages)
         {
 
-            int[] repeatsOfValue = CountRepeats(allPackages);
+            XmlSerializableDictionary<int, int> repeatsOfValue = CountRepeats(allPackages);
 
-            int mode = GetMaxIndex(repeatsOfValue);
+            int mode = GetKeyOfMax(repeatsOfValue);
             
             List<int> modes = new List<int>();
-            for (int i = 0; i < repeatsOfValue.Length; i++)
+            foreach (var element in repeatsOfValue)
             {
-                if (repeatsOfValue[i] == repeatsOfValue[mode]) modes.Add(i); // find several modes
+                if (element.Value == repeatsOfValue[mode])
+                {
+                    modes.Add(element.Key);
+                }
             }
             return modes;
         }
 
         public static int CountMedian(int[] allPackages)
         {
-            int[] repeats = CountRepeats(allPackages);
+            XmlSerializableDictionary<int, int> repeats = CountRepeats(allPackages);
             int sum = 0;
             int currentRepeat = 0;
-            while (sum < (Info.SavedPackagesAmount + allPackages.Length) / 2)
+            var sortedDict = new SortedDictionary<int, int>(repeats);
+            foreach(var element in sortedDict)
             {
-                sum += repeats[currentRepeat];
-                currentRepeat++;
+                sum += element.Value;
+                currentRepeat = element.Key;
+                if (sum > (Info.SavedPackagesAmount + allPackages.Length) / 2) break;
             }
             return currentRepeat;
         }
@@ -172,15 +180,14 @@ namespace ExchangeParameterCounterClient
         /// </summary>
         /// <param name="allPackages"></param>
         /// <returns>Array of int values repeats.</returns>
-        private static int[] CountRepeats(int[] allPackages)
+        private static XmlSerializableDictionary<int, int> CountRepeats(int[] allPackages)
         {
-            int[] repeatsOfValue = new int[Info.RepeatsOfValues.Length];
-            Array.Copy(Info.RepeatsOfValues, repeatsOfValue, Info.RepeatsOfValues.Length);
+            XmlSerializableDictionary<int, int> repeatsOfValue = XmlSerializableDictionary<int, int>.DeepCopy<int, int>(Info.RepeatsOfValues);
             foreach (var package in allPackages)
             {
-                if (repeatsOfValue.Length <= package)
+                if (repeatsOfValue.ContainsKey(package) == false)
                 {
-                    Array.Resize(ref repeatsOfValue, package+1);
+                    repeatsOfValue.Add(package, 0);
                 }
                 repeatsOfValue[package]++; // count repeats
             }

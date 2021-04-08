@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using SerializationXML;
 
@@ -8,6 +9,7 @@ namespace ExchangeParameterCounterClient
     {
         static void Main(string[] args)
         {
+            CheckForDataFolder();
             ClientConfig clientConfig = Serializer.GetDataFromXml<ClientConfig>(PathInfo.ClientConfigPath);
             var client = new Client(clientConfig);
             DataProcess.MaxSizeOfFile = clientConfig.MaxSizeOfFile;
@@ -22,6 +24,11 @@ namespace ExchangeParameterCounterClient
                     threadWriteConsole.Start();
                 }
             }
+        }
+
+        static void CheckForDataFolder()
+        {
+            if (!Directory.Exists(PathInfo.DataPath)) Directory.CreateDirectory(PathInfo.DataPath);
         }
 
         static void WriteInfoToConsole()

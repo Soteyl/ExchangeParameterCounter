@@ -22,5 +22,18 @@ namespace ExchangeParameterCounterServer
 			MinValue = minValue;
 			MaxValue = maxValue;
         }
-	}
+
+        public override bool Equals(object obj)
+        {
+			if (obj is ServerConfig conf)
+			{
+				return (MulticastIP == conf.MulticastIP) && (MulticastPort == conf.MulticastPort) && (MinValue == conf.MinValue) && (MaxValue == conf.MaxValue);
+			}
+			else return false;
+        }
+        public override int GetHashCode()
+        {
+            return 13 * MulticastPort * MinValue * MaxValue + MulticastIP.GetHashCode();
+        }
+    }
 }

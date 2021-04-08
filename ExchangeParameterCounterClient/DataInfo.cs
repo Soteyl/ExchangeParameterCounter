@@ -12,16 +12,16 @@ namespace ExchangeParameterCounterClient
         public int SavedPackagesAmount { get; set; }
         public int LastDataFileNumber { get; set; }
 
-        public int[] RepeatsOfValues { get; set; } = new int[0];
+        public XmlSerializableDictionary<int, int> RepeatsOfValues { get; set; }
         public float Average { get; set; }
         public double StandartDeviation { get; set; }
         public List<int> Modes { get; set; }
         public int Median { get; set; }
         public DataInfo()
         {
-            RepeatsOfValues = new int[0];
+            RepeatsOfValues = new XmlSerializableDictionary<int, int>();
         }
-        public DataInfo(int lostPackagesAmount, float average, double standartDeviation, List<int> modes, int median, int[] repeatsOfValues, int savedPackagesAmount)
+        public DataInfo(int lostPackagesAmount, float average, double standartDeviation, List<int> modes, int median, XmlSerializableDictionary<int, int> repeatsOfValues, int savedPackagesAmount)
         {
             LostPackagesAmount = lostPackagesAmount;
             Average = average;
