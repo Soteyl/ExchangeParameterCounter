@@ -8,44 +8,46 @@ using System.Threading;
 
 namespace ExchangeParameterCounterClient
 {
-    public class Client: ClientConfig
+    public class Client: ClientConfig, IMessageReceiver
     {
         private IPAddress _ip;
         private Thread SaveData;
+        private IPEndPoint ipEndPoint;
         public Client(ClientConfig config): base(config.MulticastIP, config.MulticastPort, config.TTL, config.ReceptionDelayInMiliseconds)
         {
             _ip = IPAddress.Parse(MulticastIP);
         }
 
-        public void ReceiveMessage()
+        public void ReceiveMessageWithCallBack(Action<List<byte>> action)
         {
             while (true)
             {
                 try
                 {
-                    IPEndPoint ipEndPoint = null;
+                    ipEndPoint = null;
                     using (UdpClient udpClient = new UdpClient(MulticastPort))
                     {
                         udpClient.JoinMulticastGroup(_ip, TTL);
-                        while (true) // get data and save to a file every ReceptionDelayInMiliseconds
+
+                        while (true)
                         {
                             Thread.Sleep(ReceptionDelayInMiliseconds);
+
                             List<byte> data = new List<byte>();
                             while (udpClient.Available > 0)
                             {
                                 data.AddRange(udpClient.Receive(ref ipEndPoint));
                             }
-
-
-                            SaveData = new Thread(() => DataProcess.SaveBytesToAFile(data));
-                            SaveData.Start();
+                            action.Invoke(data);
                         }
+
                     }
                 }
+                
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
-                    Thread.Sleep(10000);
+                    Thread.Sleep(5000);
                 }
             }
         }
