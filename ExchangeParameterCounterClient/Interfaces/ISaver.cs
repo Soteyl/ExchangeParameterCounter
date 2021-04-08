@@ -6,6 +6,6 @@ namespace ExchangeParameterCounterClient
 {
     public interface ISaver
     {
-        void Save<T>(T obj, string path);
+        void Save<T>(T obj);
     }
 }

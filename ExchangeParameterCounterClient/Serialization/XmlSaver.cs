@@ -8,11 +8,16 @@ namespace ExchangeParameterCounterClient
 {
     public class XmlSaver : ISaver
     {
-        public void Save<T>(T obj, string path)
+        private string _path;
+        public XmlSaver(string path)
         {
-            if (!Directory.Exists(Path.GetDirectoryName(path))) Directory.CreateDirectory(Path.GetDirectoryName(path));
+            _path = path;
+        }
+        public void Save<T>(T obj)
+        {
+            if (!Directory.Exists(Path.GetDirectoryName(_path))) Directory.CreateDirectory(Path.GetDirectoryName(_path));
             XmlSerializer formatter = new XmlSerializer(typeof(T));
-            using (FileStream fs = new FileStream(path, FileMode.Create))
+            using (FileStream fs = new FileStream(_path, FileMode.Create))
             {
                 formatter.Serialize(fs, obj);
                 fs.Close();

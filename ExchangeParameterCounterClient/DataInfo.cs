@@ -1,146 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
-using System.Xml.Serialization;
 
 namespace ExchangeParameterCounterClient
 {
     [Serializable]
-    public class DataInfo: IGettable
+    public class DataInfo : IGettable
     {
         public int LostPackagesAmount { get; set; }
         public int SavedPackagesAmount { get; set; }
-
-        public XmlSerializableDictionary<int, int> RepeatsOfValues { get; set; }
+        public XmlSerializableDictionary<int, int> RepeatsOfValues { get; set; } = new XmlSerializableDictionary<int, int>();
         public float Average { get; set; }
         public double StandartDeviation { get; set; }
         public List<int> Modes { get; set; } = new List<int>();
         public int Median { get; set; }
 
-        private Delimiters _delimiters;
-        private PathInfo _path;
-        private IDataGetter _dataInfoGetter;
-        private ISaver _saverInfo;
-        private ISaver _saverData;
-        private IShower _shower;
-        private IMessageReceiver _client;
-        private bool _receivingData;
-        private bool _needSaveDataToFile;
-        public DataInfo()
-        {
-            RepeatsOfValues = new XmlSerializableDictionary<int, int>();
-        }
-        public DataInfo(int lostPackagesAmount,
-                        float average, 
-                        double standartDeviation,
-                        List<int> modes, 
-                        int median, 
-                        XmlSerializableDictionary<int, int> repeatsOfValues,
-                        int savedPackagesAmount)
-        {
-            LostPackagesAmount = lostPackagesAmount;
-            Average = average;
-            StandartDeviation = standartDeviation;
-            Modes = modes;
-            Median = median;
-            RepeatsOfValues = repeatsOfValues;
-            SavedPackagesAmount = savedPackagesAmount;
-        }
-        public DataInfo(IDataGetter dataInfoGetter, IShower shower, ISaver saverInfo, ISaver saverData, IMessageReceiver client, PathInfo path, Delimiters delimiters)
-        {
-            _dataInfoGetter = dataInfoGetter;
-            _shower = shower;
-            _path = path;
-            _saverInfo = saverInfo;
-            _saverData = saverData;
-            _client = client;
-            _delimiters = delimiters;
-            dataInfoGetter.GetData(this, _path.DataInfo);
-        }
-
-        public void BeginReceivingData(bool needsSaveDataToFile)
-        {
-            _needSaveDataToFile = needsSaveDataToFile;
-
-            new Thread(()=> _client.ReceiveMessageWithCallBack((x) => OnReceivingData(x))).Start();
-        }
-
-        private void OnReceivingData(List<byte> data)
-        {
-            ProcessData(data, _needSaveDataToFile);
-        }
-        private void ProcessData(List<byte> data, bool NeedsSaveDataToFile)
-        {
-            if (NeedsSaveDataToFile)
-            {
-                _saverData.Save(data, _path.PackagesFilePath);
-            }
-            var preparedData = PrepareData(data);
-            ProcessNewInfo(preparedData);
-        }
-
-        private List<Package> PrepareData(List<byte> data)
-        {
-            List<Package> prepared = new List<Package>();
-            string byteToString = Encoding.Default.GetString(data.ToArray());
-            string[] splittedByPackages = byteToString.Split(_delimiters.BetweenPackages);
-            foreach(var package in splittedByPackages)
-            {
-                string[] splittedByNumberAndValue = package.Split(_delimiters.BetweenNumberAndValue);
-                if (splittedByNumberAndValue[0].Length > 0)
-                {
-                    var preparedPackage = new Package();
-                    bool parsedNumber = int.TryParse(splittedByNumberAndValue[0], out preparedPackage.Number);
-                    bool parsedValue = int.TryParse(splittedByNumberAndValue[1], out preparedPackage.Value);
-                    if (parsedNumber && parsedValue)
-                    {
-                        prepared.Add(preparedPackage);
-                    }
-                }
-            }
-            return prepared;
-        }
-        public void StopReceivingData()
-        {
-            _receivingData = false;
-        }
-        private void ProcessNewInfo(List<Package> data)
+        public void ProcessNewInfo(Data data)
         {
             LostPackagesAmount += CountLostPackages(data);
 
-            float allPackagesSum = (Average * SavedPackagesAmount + CountAverage(data) * data.Count);
-            Average = allPackagesSum / (SavedPackagesAmount + data.Count);
+            float allPackagesSum = (Average * SavedPackagesAmount + CountAverage(data) * data.Prepared.Count);
+            Average = allPackagesSum / (SavedPackagesAmount + data.Prepared.Count);
 
             var newDeviation = CountStandartDeviation(data);
-            StandartDeviation = UnitStandartDeviation(newDeviation, data.Count);
+            StandartDeviation = UnitStandartDeviation(newDeviation, data.Prepared.Count);
 
             UpdateRepeats(data);
 
-            Modes = CountModes(data);
+            Modes = CountModes();
 
-            SavedPackagesAmount += data.Count;
+            SavedPackagesAmount += data.Prepared.Count;
 
             Median = CountMedian();
-
-
-            Save();
+        }
+        private double UnitStandartDeviation(double newDeviation, int dataCount)
+        {
+            return (SavedPackagesAmount * StandartDeviation + newDeviation * dataCount) / (SavedPackagesAmount + dataCount);
         }
 
-        private List<int> CountModes(List<Package> data)
+        private float CountAverage(Data data)
         {
-
-            int mode = GetKeyOfMax(RepeatsOfValues);
-
-            List<int> modes = new List<int>();
-            foreach (var element in RepeatsOfValues)
+            int sum = 0;
+            foreach (var package in data.Prepared)
             {
-                if (element.Value == RepeatsOfValues[mode])
+                sum += package.Value;
+            }
+            return (float)sum / data.Prepared.Count;
+        }
+        private double CountStandartDeviation(Data data)
+        {
+            float average = Average;
+            double sum = 0;
+            foreach (var package in data.Prepared)
+            {
+                var delta = package.Value - average;
+                sum += delta * delta;
+            }
+            return Math.Sqrt(sum / (data.Prepared.Count - 1));
+        }
+
+        private int CountLostPackages(Data data)
+        {
+            int lostAmount = 0;
+            for (int i = 1; i < data.Prepared.Count; i++)
+            {
+                int lastNumber = data.Prepared[i - 1].Number;
+                int currentNumber = data.Prepared[i].Number;
+                if (currentNumber - lastNumber != 1 || (currentNumber == 0 && lastNumber == 999)) // the package is numbered from 0 to 999
                 {
-                    modes.Add(element.Key);
+                    if (lastNumber > currentNumber) lostAmount += currentNumber + (999 - lastNumber);
+                    else lostAmount += currentNumber - lastNumber;
                 }
             }
-            return modes;
+            return lostAmount;
         }
 
         private int CountMedian()
@@ -157,9 +89,23 @@ namespace ExchangeParameterCounterClient
             return currentRepeat;
         }
 
+        private void UpdateRepeats(Data data)
+        {
+            XmlSerializableDictionary<int, int> repeatsOfValue = XmlSerializableDictionary<int, int>.DeepCopy(RepeatsOfValues);
+            foreach (var package in data.Prepared)
+            {
+                if (repeatsOfValue.ContainsKey(package.Value) == false)
+                {
+                    repeatsOfValue.Add(package.Value, 0);
+                }
+                repeatsOfValue[package.Value]++; // count repeats
+            }
+            RepeatsOfValues = repeatsOfValue;
+        }
+
         private int GetKeyOfMax(XmlSerializableDictionary<int, int> array)
         {
-            int result; 
+            int result;
             var e = array.GetEnumerator();
             e.MoveNext();
             result = e.Current.Key;
@@ -173,58 +119,20 @@ namespace ExchangeParameterCounterClient
             return result;
         }
 
-        private void UpdateRepeats(List<Package> data)
+        private List<int> CountModes()
         {
-            XmlSerializableDictionary<int, int> repeatsOfValue = XmlSerializableDictionary<int, int>.DeepCopy(RepeatsOfValues);
-            foreach (var package in data)
-            {
-                if (repeatsOfValue.ContainsKey(package.Value) == false)
-                {
-                    repeatsOfValue.Add(package.Value, 0);
-                }
-                repeatsOfValue[package.Value]++; // count repeats
-            }
-            RepeatsOfValues = repeatsOfValue;
-        }
-        private int CountLostPackages(List<Package> data)
-        {
-            int lostAmount = 0;
-            for (int i = 1; i < data.Count; i++)
-            {
-                int lastNumber = data[i - 1].Number;
-                int currentNumber = data[i].Number;
-                if (currentNumber - lastNumber != 1 || (currentNumber == 0 && lastNumber == 999)) // the package is numbered from 0 to 999
-                {
-                    if (lastNumber > currentNumber) lostAmount += currentNumber + (999 - lastNumber);
-                    else lostAmount += currentNumber - lastNumber;
-                }
-            }
-            return lostAmount;
-        }
-        private float CountAverage(List<Package> data)
-        {
-            int sum = 0;
-            foreach (var package in data)
-            {
-                sum += package.Value;
-            }
-            return (float)sum/data.Count;
-        }
-        private double CountStandartDeviation(List<Package> data)
-        {
-            float average = Average;
-            double sum = 0;
-            foreach (var package in data)
-            {
-                var delta = package.Value - average;
-                sum += delta*delta;
-            }
-            return Math.Sqrt(sum / (data.Count - 1));
-        }
 
-        private double UnitStandartDeviation(double newDeviation, int dataCount)
-        {
-            return (SavedPackagesAmount * StandartDeviation + newDeviation * dataCount) / (SavedPackagesAmount + dataCount);
+            int mode = GetKeyOfMax(RepeatsOfValues);
+
+            List<int> modes = new List<int>();
+            foreach (var element in RepeatsOfValues)
+            {
+                if (element.Value == RepeatsOfValues[mode])
+                {
+                    modes.Add(element.Key);
+                }
+            }
+            return modes;
         }
 
         public void UpdateFromGetter(object obj)
@@ -240,21 +148,13 @@ namespace ExchangeParameterCounterClient
                 StandartDeviation = newData.StandartDeviation;
             }
         }
-        public void Save()
-        {
-            _saverInfo.Save(this, _path.DataInfo);
-        }
-        public void Show()
-        {
-            _shower.Show(this);
-        }
         public override string ToString()
         {
             string value = "Lost packages amount: " + LostPackagesAmount;
             value += "\nAverage: " + Average;
             value += "\nStandart Deviation: " + StandartDeviation;
             value += "\nModes: ";
-            foreach(var mode in Modes)
+            foreach (var mode in Modes)
             {
                 value += mode + " ";
             }

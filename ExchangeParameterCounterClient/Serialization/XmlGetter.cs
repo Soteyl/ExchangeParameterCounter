@@ -8,11 +8,16 @@ namespace ExchangeParameterCounterClient
 {
     class XmlGetter : IDataGetter
     {
-        public void GetData<T>(T obj, string path) where T : IGettable, new()
+		private string _path;
+		public XmlGetter(string path)
+        {
+			_path = path;
+        }
+        public void GetData<T>(T obj) where T : IGettable, new()
         {
 			T data = default(T);
 			XmlSerializer formatter = new XmlSerializer(typeof(T));
-			using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
+			using (FileStream fs = new FileStream(_path, FileMode.OpenOrCreate))
 			{
 				try
 				{

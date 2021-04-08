@@ -7,6 +7,19 @@ namespace ExchangeParameterCounterClient
     [Serializable]
     public class PathInfo: IGettable
     {
+        private static PathInfo instance;
+
+        public PathInfo() { }
+
+        public static PathInfo GetInstance()
+        {
+            if (instance == null)
+            {
+                instance = new PathInfo();
+                new XmlGetter("path.info").GetData(instance);
+            }
+            return instance;
+        }
         public string ClientConfigPath { get; set; } // => "client.config";
         public string DataPath { get; set; } // => "data";
         public string DelimitersPath { get; set; }

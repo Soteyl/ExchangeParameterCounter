@@ -8,20 +8,20 @@ namespace ExchangeParameterCounterClient
     {
         static void Main(string[] args)
         {
-            IDataGetter xmlGetter = new XmlGetter();
-            IShower consoleShower = new ConsoleShower();
-            ISaver xmlSaver = new XmlSaver();
-            ISaver dataTxtSaver = new DataTxtSaver();
-            PathInfo path = GetDataToNewObj<PathInfo>("path.info", xmlGetter);
+            var path = PathInfo.GetInstance();
 
             CreateDirectoriesIfNotExists(path);
-            Delimiters delimiters = new Delimiters();
-            ClientConfig clientConfig = GetDataToNewObj<ClientConfig>(path.ClientConfigPath, xmlGetter);
-            SaveToFileConfig saveToFileConfig = GetDataToNewObj<SaveToFileConfig>(path.SaveToFileConfig, xmlGetter);
+            
+            ClientConfig clientConfig = GetDataToNewObj<ClientConfig>(path.ClientConfigPath);
+            SaveToFileConfig saveToFileConfig = GetDataToNewObj<SaveToFileConfig>(path.SaveToFileConfig);
+            DataInfo Info = GetDataToNewObj<DataInfo>(path.DataInfo);
 
+            ISaver xmlSaver = new XmlSaver(path.DataInfo);
+            ISaver dataTxtSaver = new DataTxtSaver(path.PackagesFilePath);
+            IShower consoleShower = new ConsoleShower();
 
             Client client = new Client(clientConfig);
-            DataInfo dataInfo = new DataInfo(xmlGetter,consoleShower, xmlSaver, dataTxtSaver, client,path,delimiters);
+            DataProcess dataInfo = new DataProcess(Info,consoleShower, xmlSaver, dataTxtSaver, client);
 
             dataInfo.BeginReceivingData(saveToFileConfig.NeedsSaveDataToFile);
 
@@ -29,10 +29,10 @@ namespace ExchangeParameterCounterClient
 
         }
 
-        private static T GetDataToNewObj<T>(string path, IDataGetter getter) where T: IGettable, new()
+        private static T GetDataToNewObj<T>(string path) where T: IGettable, new()
         {
             T obj = new T();
-            getter.GetData(obj, path);
+            new XmlGetter(path).GetData(obj);
             return obj;
         }
 
@@ -41,7 +41,7 @@ namespace ExchangeParameterCounterClient
             if (!Directory.Exists(Path.GetDirectoryName(path.DataInfo))) Directory.CreateDirectory(Path.GetDirectoryName(path.DataInfo));
         }
 
-        private static void OnEnterClick(DataInfo dataInfo)
+        private static void OnEnterClick(DataProcess dataInfo)
         {
             while (true)
             {

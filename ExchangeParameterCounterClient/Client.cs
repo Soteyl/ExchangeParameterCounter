@@ -11,14 +11,13 @@ namespace ExchangeParameterCounterClient
     public class Client: ClientConfig, IMessageReceiver
     {
         private IPAddress _ip;
-        private Thread SaveData;
         private IPEndPoint ipEndPoint;
         public Client(ClientConfig config): base(config.MulticastIP, config.MulticastPort, config.TTL, config.ReceptionDelayInMiliseconds)
         {
             _ip = IPAddress.Parse(MulticastIP);
         }
 
-        public void ReceiveMessageWithCallBack(Action<List<byte>> action)
+        public void ReceiveMessageWithCallBack(IDataProcess process)
         {
             while (true)
             {
@@ -38,7 +37,7 @@ namespace ExchangeParameterCounterClient
                             {
                                 data.AddRange(udpClient.Receive(ref ipEndPoint));
                             }
-                            action.Invoke(data);
+                            new Thread(() => process.OnReceivingData(data)).Start();
                         }
 
                     }

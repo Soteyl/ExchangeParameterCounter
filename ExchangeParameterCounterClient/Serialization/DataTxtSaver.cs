@@ -7,12 +7,17 @@ namespace ExchangeParameterCounterClient
 {
     class DataTxtSaver : ISaver
     {
-        public void Save<T>(T obj, string path)
+        private string _path;
+        public DataTxtSaver(string path)
+        {
+            _path = path;
+        }
+        public void Save<T>(T obj)
         {
             if (obj is List<byte> data)
             {
                 using (
-                    Stream fs = new FileStream(path, FileMode.Append))
+                    Stream fs = new FileStream(_path, FileMode.Append))
                 {
                     fs.Write(data.ToArray());
                 }

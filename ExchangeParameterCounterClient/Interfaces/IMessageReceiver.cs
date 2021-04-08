@@ -6,7 +6,7 @@ namespace ExchangeParameterCounterClient
 {
     public interface IMessageReceiver
     {
-        void ReceiveMessageWithCallBack(Action<List<byte>> action);
+        void ReceiveMessageWithCallBack(IDataProcess process);
         int ReceptionDelayInMiliseconds { get; set; }
     }
 }
